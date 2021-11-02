@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"greenlight.aaa.net/internal/data"
+	"greenlight.aaa.net/internal/validator"
 ) // Add a createMovieHandler for the "ST /v1/movies" endpoint. For now we simply // return a plain-text placeholder response.
 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	var input struct {
 		Title   string       `json:"title"`
 		Year    int32        `json:"year"`
@@ -21,6 +23,16 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		app.badRequestResponse(w, r, err)
 		return
 	}
+
+	movie := &data.Movie{Title: input.Title, Year: input.Year, Runtime: input.Runtime, Genres: input.Genres}
+
+	v := validator.New()
+
+	if data.ValidateMovie(v, movie); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+	
 	fmt.Fprintf(w, "%+v\n", input)
 }
 

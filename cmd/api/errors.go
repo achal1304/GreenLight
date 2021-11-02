@@ -9,6 +9,10 @@ func (app *application) logError(r *http.Request, err error) {
 	app.logger.Println(err)
 }
 
+func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
+
 func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message interface{}) {
 	env := envelope{"error": message} // Write the response using the writeJSON() helper. If this happens to return an // error then log it, and fall back to sending the client an empty response with a // 500 Internal Server Error status code.
 	err := app.writeJSON(w, status, env, nil)
