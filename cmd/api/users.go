@@ -28,6 +28,13 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		Activated: false}
 
 	err = user.Password.Set(input.Password)
+
+	// user := &data.User{
+	// 	Name:      "Achal Jeans",
+	// 	Email:     "ach123@example.com",
+	// 	Activated: false}
+
+	// err := user.Password.Set("pa55word")
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -49,6 +56,12 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
+		return
+	}
+
+	err = app.mailer.Send(user.Email, "user_welcome.tmpl", user)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 

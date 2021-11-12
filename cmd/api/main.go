@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"greenlight.aaa.net/internal/data"
 	"greenlight.aaa.net/internal/jsonlog"
+	"greenlight.aaa.net/internal/mailer"
 )
 
 const version = "1.0.0" // Define a config struct to hold all the configuration settings for our application. // For now, the only configuration settings will be the network port that we want the // server to listen on, and the name of the current operating environment for the // application (development, staging, production, etc.). We will read in these // configuration settings from command-line flags when the application starts.
@@ -28,12 +29,21 @@ type config struct {
 		burst   int
 		enabled bool
 	}
+
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 } // Define an application struct to hold the dependencies for our HTTP handlers, helpers, // and middleware. At the moment this only contains a copy of the config struct and a // logger, but it will grow to include a lot more as our build progresses.
 
 type application struct {
 	config config
 	logger *jsonlog.Logger
 	models data.Models
+	mailer mailer.Mailer
 }
 
 func main() { // Declare an instance of the config struct.
@@ -51,6 +61,12 @@ func main() { // Declare an instance of the config struct.
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "0a268b42179455", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "7d5bebbf92ebae", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.aaa.net>", "SMTP sender")
+
 	flag.Parse()
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
@@ -66,6 +82,7 @@ func main() { // Declare an instance of the config struct.
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	} // Declare a new servemux and add a /v1/healthcheck route which dispatches requests // to the healthcheckHandler method (which we will create in a moment).
 	// Declare a HTTP server with some sensible timeout settings, which listens on the // port provided in the config struct and uses the servemux we created above as the // handler.
 	err = app.serve()
