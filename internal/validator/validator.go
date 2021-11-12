@@ -38,7 +38,11 @@ func In(value string, list ...string) bool {
 		}
 	}
 	return false
-} // Matches returns true if a string value matches a specific regexp pattern. func Matches(value string, rx *regexp.Regexp) bool { return rx.MatchString(value) }// Unique returns true if all string values in a slice are unique.
+} // Matches returns true if a string value matches a specific regexp pattern.
+
+func Matches(value string, rx *regexp.Regexp) bool {
+	return rx.MatchString(value)
+} // Unique returns true if all string values in a slice are unique.
 
 func Unique(values []string) bool {
 	uniqueValues := make(map[string]bool)

@@ -11,19 +11,18 @@ var (
 )
 
 type Models struct {
-	Movies interface {
-		Insert(movie *Movie) error
-		Get(id int64) (*Movie, error)
-		Update(movie *Movie) error
-		Delete(id int64) error
-		GetAll(Title string, Genres []string, Filters Filters) ([]*Movie, Metadata, error)
-	}
+	Movies MovieModel
+	Users  UserModel
 }
 
 func NewModels(db *sql.DB) Models {
-	return Models{Movies: MovieModel{DB: db}}
+	return Models{
+		Movies: MovieModel{DB: db},
+		Users:  UserModel{DB: db},
+	}
 }
 
-func NewMockModels() Models {
-	return Models{Movies: MockMovieModel{}}
-}
+// func NewMockModels() Models {
+// 	return Models{Movies: MovieModel{DB: db},
+// 	Users:  UserModel{DB: db},}
+// }
