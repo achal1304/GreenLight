@@ -9,6 +9,8 @@ import (
 	"greenlight.aaa.net/internal/validator"
 )
 
+var AnonymousUser = &User{}
+
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
