@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -38,6 +39,9 @@ type config struct {
 		password string
 		sender   string
 	}
+	cors struct {
+		trustedOrigins []string
+	}
 } // Define an application struct to hold the dependencies for our HTTP handlers, helpers, // and middleware. At the moment this only contains a copy of the config struct and a // logger, but it will grow to include a lot more as our build progresses.
 
 type application struct {
@@ -68,6 +72,11 @@ func main() { // Declare an instance of the config struct.
 	flag.StringVar(&cfg.smtp.username, "smtp-username", "0a268b42179455", "SMTP username")
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "7d5bebbf92ebae", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.aaa.net>", "SMTP sender")
+
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
+		cfg.cors.trustedOrigins = strings.Fields(val)
+		return nil
+	})
 
 	flag.Parse()
 
